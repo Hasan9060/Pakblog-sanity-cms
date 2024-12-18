@@ -6,7 +6,7 @@ import { PortableText } from "next-sanity";
 import Image from "next/image";
 import { GetServerSideProps } from 'next';
 
-export const Page = async ({ params }: { params: { slug: string } }) => {
+export const page = async ({ params }: { params: { slug: string } }) => {
   const { slug } = params; 
 
   const query =`*[_type=='Post' && slug.current=="${slug}"]{
