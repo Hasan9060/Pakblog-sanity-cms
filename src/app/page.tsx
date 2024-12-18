@@ -1,0 +1,33 @@
+import BlogCard from "@/components/BlogCard";
+import { client } from "@/sanity/lib/client";
+import Image from "next/image";
+
+
+export const revalidate =30;
+
+export default async function Home() {
+  
+    const query = `*[_type=='Post']  | order(_createdAt asc){
+  summary,image,title,
+  "slug":slug.current
+}`;
+
+const post:Post[] = await client.fetch(query) 
+console.log(post)
+
+
+  return (
+    <main className="flex min-h-screen flex-col ">
+      <h1 className="text-2xl font-bold uppercase my-12 text-center text-dark dark:text-light sm:text-3xl lg:text-5xl ">
+      Fresh Reads
+      </h1>
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        {
+          post.map((post:Post)=>(
+        <BlogCard post ={post} key={post.slug}/>
+        ))}
+
+      </section>
+    </main>
+  );
+}
