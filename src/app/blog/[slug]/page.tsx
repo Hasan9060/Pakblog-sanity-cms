@@ -1,42 +1,26 @@
-// app/blog/[slug]/page.tsx
 import { components } from "@/components/Customcomponent";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
+import { post } from "@/sanity/lib/post";
 import { PortableText } from "next-sanity";
 import Image from "next/image";
+import { GetServerSideProps } from 'next';
 
-type PostData = {
-  title: string;
-  summary: string;
-  image: any;
-  content: any;
-  author: {
-    bio: string;
-    image: any;
-    name: string;
-  };
-};
+export const Page = async ({ params }: { params: { slug: string } }) => {
+  const { slug } = params; 
 
-type PageProps = {
-  post: PostData;
-};
-
-const Page = async ({ params }: { params: { slug: string } }) => {
-  const { slug } = params;
-
-  const query = `*[_type=='Post' && slug.current=="${slug}"]{
-    title, summary, image, content,
-    author->{bio, image, name}
-  }[0]`;
+  const query =`*[_type=='Post' && slug.current=="${slug}"]{
+  title,summary,image,content,
+  author->{bio,image,name}
+}[0]`;
 
   const post = await client.fetch(query);
+  console.log(post);
 
-  if (!post) {
-    return <div>Post not found</div>;
-  }
 
   return (
     <article className="mt-12 mb-24 px-2 2xl:px-12 flex flex-col gap-y-8">
+
       {/* Blog Title */}
       <h1 className="text-xl xs:text-3xl lg:text-5xl font-bold text-dark dark:text-light">
         {post.title}
@@ -53,12 +37,12 @@ const Page = async ({ params }: { params: { slug: string } }) => {
 
       {/* Blog Summary Section */}
       <section>
-        <h2 className="text-xl xs:text-2xl md:text-3xl font-bold uppercase text-green-500">
-          Summary
-        </h2>
-        <p className="text-base md:text-xl leading-relaxed text-justify text-dark/80 dark:text-light/80">
-          {post.summary}
-        </p>
+      <h2 className="text-xl xs:text-2xl md:text-3xl font-bold uppercase text-green-500">
+        Summary
+      </h2>
+      <p className="text-base md:text-xl leading-relaxed text-justify text-dark/80 dark:text-light/80">
+        {post.summary}
+      </p>
       </section>
 
       {/* Author Section (Image & Bio) */}
@@ -71,9 +55,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
           className="object-cover rounded-full h-12 w-12 sm:h-24 sm:w-24"
         />
         <div className="flex flex-col gap-1">
-          <h3 className="text-xl font-bold text-dark dark:text-light">
-            {post.author.name}
-          </h3>
+          <h3 className="text-xl font-bold text-dark dark:text-light">{post.author.name}</h3>
           <p className="italic text-xs xs:text-sm sm:text-base text-dark/80 dark:text-light/80">
             {post.author.bio}
           </p>
@@ -86,17 +68,4 @@ const Page = async ({ params }: { params: { slug: string } }) => {
       </section>
     </article>
   );
-};
-
-// Generate static paths for dynamic routes (slug-based pages)
-export async function generateStaticParams() {
-  const query = `*[_type == "Post"]{slug}`;
-  const posts = await client.fetch(query);
-  
-  // Generate paths for each post's slug
-  return posts.map((post: { slug: { current: string } }) => ({
-    slug: post.slug.current,
-  }));
 }
-
-export default Page;
