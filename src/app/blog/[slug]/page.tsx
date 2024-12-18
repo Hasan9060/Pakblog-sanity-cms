@@ -1,24 +1,37 @@
 import { components } from "@/components/Customcomponent";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
-import { post } from "@/sanity/lib/post";
 import { PortableText } from "next-sanity";
 import Image from "next/image";
 
-export default async function page({params:{slug}}:{params:{slug:string}}) {
+interface Author {
+  name: string;
+  bio: string;
+  image: any; // you can refine this based on your image structure
+}
 
-  const query =`*[_type=='Post' && slug.current=="${slug}"]{
-  title,summary,image,content,
-  author->{bio,image,name}
-}[0]`;
+interface Post {
+  title: string;
+  summary: string;
+  image: any; // you can refine this based on your image structure
+  content: any; // assuming content is an array from PortableText
+  author: Author;
+}
 
-  const post = await client.fetch(query);
-  console.log(post);
+export default async function Page({ params: { slug } }: { params: { slug: string } }) {
+  const query = `*[_type=='Post' && slug.current=="${slug}"]{
+    title, summary, image, content,
+    author->{bio, image, name}
+  }[0]`;
 
+  const post: Post | null = await client.fetch(query);
+  if (!post) {
+    // You can return a 404 page or a message if the post doesn't exist
+    return <div>Post not found.</div>;
+  }
 
   return (
     <article className="mt-12 mb-24 px-2 2xl:px-12 flex flex-col gap-y-8">
-
       {/* Blog Title */}
       <h1 className="text-xl xs:text-3xl lg:text-5xl font-bold text-dark dark:text-light">
         {post.title}
@@ -35,12 +48,12 @@ export default async function page({params:{slug}}:{params:{slug:string}}) {
 
       {/* Blog Summary Section */}
       <section>
-      <h2 className="text-xl xs:text-2xl md:text-3xl font-bold uppercase text-green-500">
-        Summary
-      </h2>
-      <p className="text-base md:text-xl leading-relaxed text-justify text-dark/80 dark:text-light/80">
-        {post.summary}
-      </p>
+        <h2 className="text-xl xs:text-2xl md:text-3xl font-bold uppercase text-green-500">
+          Summary
+        </h2>
+        <p className="text-base md:text-xl leading-relaxed text-justify text-dark/80 dark:text-light/80">
+          {post.summary}
+        </p>
       </section>
 
       {/* Author Section (Image & Bio) */}
