@@ -1,35 +1,28 @@
 import { components } from "@/components/Customcomponent";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
+import { post } from "@/sanity/lib/post";
 import { PortableText } from "next-sanity";
 import Image from "next/image";
+import { GetServerSideProps } from "next";
 
-interface Author {
-  name: string;
-  bio: string;
-  image: any; // you can refine this based on your image structure
-}
-
-interface Post {
+type PostData = {
   title: string;
   summary: string;
-  image: any; // you can refine this based on your image structure
-  content: any; // assuming content is an array from PortableText
-  author: Author;
-}
+  image: any;
+  content: any;
+  author: {
+    bio: string;
+    image: any;
+    name: string;
+  };
+};
 
-export default async function Page({ params: { slug } }: { params: { slug: string } }) {
-  const query = `*[_type=='Post' && slug.current=="${slug}"]{
-    title, summary, image, content,
-    author->{bio, image, name}
-  }[0]`;
+type PageProps = {
+  post: PostData;
+};
 
-  const post: Post | null = await client.fetch(query);
-  if (!post) {
-    // You can return a 404 page or a message if the post doesn't exist
-    return <div>Post not found.</div>;
-  }
-
+const Page = ({ post }: PageProps) => {
   return (
     <article className="mt-12 mb-24 px-2 2xl:px-12 flex flex-col gap-y-8">
       {/* Blog Title */}
@@ -66,7 +59,9 @@ export default async function Page({ params: { slug } }: { params: { slug: strin
           className="object-cover rounded-full h-12 w-12 sm:h-24 sm:w-24"
         />
         <div className="flex flex-col gap-1">
-          <h3 className="text-xl font-bold text-dark dark:text-light">{post.author.name}</h3>
+          <h3 className="text-xl font-bold text-dark dark:text-light">
+            {post.author.name}
+          </h3>
           <p className="italic text-xs xs:text-sm sm:text-base text-dark/80 dark:text-light/80">
             {post.author.bio}
           </p>
@@ -79,4 +74,29 @@ export default async function Page({ params: { slug } }: { params: { slug: strin
       </section>
     </article>
   );
-}
+};
+
+// GetServerSideProps to fetch data based on the slug
+export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params }) => {
+  const { slug } = params as { slug: string };
+
+  const query = `*[_type=='Post' && slug.current=="${slug}"]{
+    title, summary, image, content,
+    author->{bio, image, name}
+  }[0]`;
+
+  const post = await client.fetch(query);
+
+  // Check if the post exists
+  if (!post) {
+    return { notFound: true };
+  }
+
+  return {
+    props: {
+      post,
+    },
+  };
+};
+
+export default Page;
