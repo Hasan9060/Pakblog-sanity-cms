@@ -1,10 +1,9 @@
+// app/blog/[slug]/page.tsx
 import { components } from "@/components/Customcomponent";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
-import { post } from "@/sanity/lib/post";
 import { PortableText } from "next-sanity";
 import Image from "next/image";
-import { GetServerSideProps } from "next";
 
 type PostData = {
   title: string;
@@ -22,7 +21,20 @@ type PageProps = {
   post: PostData;
 };
 
-const Page = ({ post }: PageProps) => {
+const Page = async ({ params }: { params: { slug: string } }) => {
+  const { slug } = params;
+
+  const query = `*[_type=='Post' && slug.current=="${slug}"]{
+    title, summary, image, content,
+    author->{bio, image, name}
+  }[0]`;
+
+  const post = await client.fetch(query);
+
+  if (!post) {
+    return <div>Post not found</div>;
+  }
+
   return (
     <article className="mt-12 mb-24 px-2 2xl:px-12 flex flex-col gap-y-8">
       {/* Blog Title */}
@@ -76,27 +88,15 @@ const Page = ({ post }: PageProps) => {
   );
 };
 
-// GetServerSideProps to fetch data based on the slug
-export const getServerSideProps: GetServerSideProps<PageProps> = async ({ params }) => {
-  const { slug } = params as { slug: string };
-
-  const query = `*[_type=='Post' && slug.current=="${slug}"]{
-    title, summary, image, content,
-    author->{bio, image, name}
-  }[0]`;
-
-  const post = await client.fetch(query);
-
-  // Check if the post exists
-  if (!post) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      post,
-    },
-  };
-};
+// Generate static paths for dynamic routes (slug-based pages)
+export async function generateStaticParams() {
+  const query = `*[_type == "Post"]{slug}`;
+  const posts = await client.fetch(query);
+  
+  // Generate paths for each post's slug
+  return posts.map((post: { slug: { current: string } }) => ({
+    slug: post.slug.current,
+  }));
+}
 
 export default Page;
