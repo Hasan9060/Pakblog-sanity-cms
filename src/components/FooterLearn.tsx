@@ -16,7 +16,7 @@ export default function FooterLearn() {
   <p className="text-white text-center mt-2">
     A graphic designer from Global Computer Institute, Karachi, with Codesoft internship experience, 
     I specialize in design, 3D modeling, video editing, and web development. As a Governor House IT 
-    Initiative participant, I’m exploring AI, Web 3.0, and the Metaverse. Fueled by tech's impact, I’m 
+    Initiative participant, I&apos;m exploring AI, Web 3.0, and the Metaverse. Fueled by tech&apos;s impact, I&apos;m 
     a lifelong learner and a coffee enthusiast ☕.
   </p>
 </section>
