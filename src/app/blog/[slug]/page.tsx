@@ -5,8 +5,24 @@ import { post } from "@/sanity/lib/post";
 import { PortableText } from "next-sanity";
 import Image from "next/image";
 
+export const revalidate = 60; //seconds
 
-export default async function page({ params:{slug} }: { params: { slug: string } }) {
+ export async function generateStaticParams() {
+  const query = `*[_type=='post']{
+    "slug":slug.current
+  }`;
+  const slugs = await client.fetch(query);
+  const slugRoutes = slugs.map((item:{slug:string})=>(
+    item.slug
+  ));
+  // console.log(slugRoutes)
+  return slugRoutes.map((slug:string)=>(
+    {slug}
+  ))
+  
+}
+
+export default async function page({params:{slug}}:{params:{slug:string}}) {
 
  
   const query =`*[_type=='Post' && slug.current=="${slug}"]{
