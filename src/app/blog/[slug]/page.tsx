@@ -22,8 +22,9 @@ export const revalidate = 60; //seconds
   
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;  // Await if it's a promise
+  const { slug } = resolvedParams;
 
  
   const query =`*[_type=='Post' && slug.current=="${slug}"]{
