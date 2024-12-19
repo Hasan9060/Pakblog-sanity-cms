@@ -4,11 +4,11 @@ import { urlFor } from "@/sanity/lib/image";
 import { post } from "@/sanity/lib/post";
 import { PortableText } from "next-sanity";
 import Image from "next/image";
-import { GetServerSideProps } from 'next';
+
 
 export const page = async ({ params }: { params: { slug: string } }) => {
-  const { slug } = params; 
-
+  const { slug } = params;
+ 
   const query =`*[_type=='Post' && slug.current=="${slug}"]{
   title,summary,image,content,
   author->{bio,image,name}
