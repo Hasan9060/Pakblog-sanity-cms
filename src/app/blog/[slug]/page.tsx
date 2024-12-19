@@ -6,8 +6,8 @@ import { PortableText } from "next-sanity";
 import Image from "next/image";
 
 
-export default async function page({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function page({ params:{slug} }: { params: { slug: string } }) {
+
  
   const query =`*[_type=='Post' && slug.current=="${slug}"]{
   title,summary,image,content,
